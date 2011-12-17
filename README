@@ -1,12 +1,12 @@
 This folder contains the libraries necessary to run the lab plugin, and can also be used in a standalone way to automate virtual machines.
 
-== CONCEPTS:
+==CONCEPTS:
 
 The lab provides a clean interface to common vm functions such as start / stop / snapshot / revert and even running system commands or higher-level functions like opening a browser to a specified URL. It's designed so the different VM technologies have a similiar interface, and you can ignore the specifics of the VM tech. The majority of the functionality is implemented in the form of drivers and controllers. Drivers implement the underlying command for each vm software (such as start/stop/revert), and controllers implement the commands which apply to all vms (such as listing all running vms, or cloning a vm). 
 
 If you're interested in porting a vm software (see below), please take a look at the workstation_driver.rb and the workstation_controller.rb -- This is a simple driver / controller in the lab, and you can simply copy / modify this to implement a new driver & controller for the software. 
 
-== SUPPORTED VM TECHNOLOGIES:
+==SUPPORTED VM TECHNOLOGIES:
 
 NOTE: The lab libraries have only been tested on linux, porting to windows is not planned at this time.
 
@@ -25,7 +25,7 @@ Need Implementation:
  - qemudo
  - others?
 
-== PLATFORM SUPPORT:
+==PLATFORM SUPPORT:
 
 You will need to have this code running on a linux box, Currently this has only been run / tested on Ubuntu 9.04 -> 10.04, though it should run on any linux with an ssh client and the dependencies below. Remote VM Hosts will need to be linux as well, though other platforms may work (untested). If you're interested in porting it to windows, please contact me (jcran). 
 
@@ -34,7 +34,7 @@ Platform Dependencies:
   - net/scp - the gem (net-scp). Required to copy files to/from the devices in the case that tools are not installed. Not necessary if tools are installed. 
   - fog - require to use the amazon_ec2 driver
 
-== STANDALONE API:
+==STANDALONE API:
 
 BACKGROUND:
 
@@ -53,7 +53,7 @@ You must first create a yaml file which describes your vm. See data/lab/test_tar
   vm_controller['vm1'].revert("clean")
   vm_controller['vm1'].revert("clean")
 
-== MSFCONSOLE LAB PLUGIN:
+==METASPLOIT MSFCONSOLE LAB PLUGIN:
 
 BACKGROUND:
 

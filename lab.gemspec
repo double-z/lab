@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.version     = Lab::VERSION
   s.authors     = ["Jonathan Cran"]
   s.email       = ["jcran@pentestify.com"]
-  s.homepage    = "http://www.pentestify.com/lab"
+  s.homepage    = "http://www.pentestify.com/projects/lab"
   s.summary     = %q{Manage vms like a boss.}
   s.description = %q{Start/Stop/Revert and do other cool stuff w/ Vmware, Virtualbox, and ESXi vms}
 

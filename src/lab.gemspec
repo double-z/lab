@@ -6,10 +6,10 @@ Gem::Specification.new do |s|
   s.name        = "lab"
   s.version     = Lab::VERSION
   s.authors     = ["Jonathan Cran"]
-  s.email       = ["jcran@0x0e.org"]
-  s.homepage    = ""
-  s.summary     = %q{TODO: Write a gem summary}
-  s.description = %q{TODO: Write a gem description}
+  s.email       = ["jcran@pentestify.com"]
+  s.homepage    = "http://www.pentestify.com/projects/lab"
+  s.summary     = %q{Manage vms like a boss.}
+  s.description = %q{Start/Stop/Revert and do other cool stuff w/ Vmware, Virtualbox, and ESXi vms}
 
   s.rubyforge_project = "lab"
 
@@ -20,5 +20,5 @@ Gem::Specification.new do |s|
 
   # specify any dependencies here; for example:
   # s.add_development_dependency "rspec"
-  # s.add_runtime_dependency "rest-client"
+   s.add_runtime_dependency "nokogiri"
 end

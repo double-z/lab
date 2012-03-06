@@ -111,33 +111,39 @@ class VmDriver
 
 private
 
-	def scp_to(local,remote)
-		#require 'net/scp'
-		#::Net::SCP.start(@hostname, @vm_user, :password => @vm_pass) do |scp|
-		#	scp.upload!(from,to)
-		#end	
+	# The only reason we don't filter here is because we need
+	# the ability to still run clean (controlled entirely by us)
+	# command lines.
+	def system_command(command)
+		puts "DEBUG: system command #{command}"
+		system(command)
+	end
 
-		system_command("scp #{local} #{@vm_user}@#{@hostname}:#{remote}")
+	def remote_system_command(command)
+		puts "DEBUG: remote system command #{command} running with user #{@user}@#{@host}"
+		system_command("ssh #{@user}@#{@host} \"#{command}\"")
+	end
+
+	def scp_to(local,remote)
+		puts "DEBUG: copying #{local} to #{remote}"
+		Net::SCP.start(@hostname, @vm_user, :password => @vm_pass) do |scp|
+			scp.upload!(from,to)
+		end	
 	end
 	
 	def scp_from(local,remote)
-		#require 'net/scp'
 		# download a file from a remote server
-		#::Net::SCP.start(@hostname, @vm_user, :password => @vm_pass) do |scp|
-		#	scp.download!(from,to)
-		#end
-		
-		system_command("scp #{@vm_user}@#{@hostname}:#{remote} #{local}")
-
+		puts "DEBUG: copying #{remote} to #{local}"
+		Net::SCP.start(@hostname, @vm_user, :password => @vm_pass) do |scp|
+			scp.download!(from,to)
+		end
 	end
 	
 	def ssh_exec(command)
-		
-		::Net::SSH.start(@hostname, @vm_user, :password => @vm_pass) do |ssh|
+		puts "DEBUG: ssh command: #{command} on host #{hostname}"
+		Net::SSH.start(@hostname, @vm_user, :password => @vm_pass) do |ssh|
 			result = ssh.exec!(command)
 		end
-		
-		`scp #{@vm_user}@#{@hostname} from to`
 	end
 
 	def filter_input(string)
@@ -160,19 +166,6 @@ private
 		end
 
 	string
-	end
-	
-	# The only reason we don't filter here is because we need
-	# the ability to still run clean (controlled entirely by us)
-	# command lines.
-	def system_command(command)
-		#puts "DEBUG: system command #{command}"
-		system(command)
-	end
-	
-	
-	def remote_system_command(command)
-		system_command("ssh #{@user}@#{@host} \"#{command}\"")
 	end
 end
 

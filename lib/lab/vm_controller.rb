@@ -21,6 +21,9 @@ require 'controllers'
 require 'drivers'
 require 'modifiers'
 
+require 'net/scp'
+require 'net/ssh'
+
 module Lab
 module Controllers
 	class VmController 

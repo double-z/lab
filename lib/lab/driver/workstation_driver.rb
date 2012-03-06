@@ -98,7 +98,7 @@ class WorkstationDriver < VmDriver
 				output_file = "/tmp/lab_command_output_#{rand(1000000)}"
 				
 				scp_to(local_tempfile_path, remote_tempfile_path)
-				ssh_exec(remote_run_command + "> #{output_file}")
+				ssh_exec(command + "> #{output_file}")
 				scp_from(output_file, output_file)
 				
 				ssh_exec("rm #{output_file}")

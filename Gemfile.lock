@@ -1,12 +1,17 @@
 PATH
   remote: .
   specs:
-    lab (0.0.1)
+    lab (0.1.0)
+      net-scp
+      net-ssh
       nokogiri
 
 GEM
   remote: http://rubygems.org/
   specs:
+    net-scp (1.0.4)
+      net-ssh (>= 1.99.1)
+    net-ssh (2.3.0)
     nokogiri (1.5.0)
 
 PLATFORMS

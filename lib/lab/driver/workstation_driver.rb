@@ -54,63 +54,115 @@ class WorkstationDriver < VmDriver
 
 	def run_command(command)
 
-		script_rand_name = rand(10000)
+		#
+		# Generate a script name
+		#
+		script_rand_name = rand(1000000)
 
+		#
+		# Configure paths for each OS
+		#
 		if @os == "windows"
 			local_tempfile_path = "/tmp/lab_script_#{script_rand_name}.bat"
 			remote_tempfile_path = "C:\\\\lab_script_#{script_rand_name}.bat"
 			remote_run_command = remote_tempfile_path
+			File.open(local_tempfile_path, 'w') {|f| f.write(command) }
 		else
 			local_tempfile_path = "/tmp/lab_script_#{script_rand_name}.sh"
 			remote_tempfile_path = "/tmp/lab_script_#{script_rand_name}.sh"
-			remote_run_command = "/bin/sh #{remote_tempfile_path}"
+			remote_run_command = remote_tempfile_path # TODO - do we need to append /bin/sh ?
+			File.open(local_tempfile_path, 'w') {|f| f.write("#!/bin/sh\n#{command}\n")}
 		end
 
-		# write out our script locally
-		File.open(local_tempfile_path, 'w') {|f| f.write(command) }
-
-		# we really can't filter command, so we're gonna stick it in a script
+		#
+		# We really can't filter command, so we're gonna stick it in a script
+		#
+		
 		if @tools
-			# copy our local tempfile to the guest
+
+			puts "DEBUG: Running w/ tools"
+
+			#
+			# Copy our local tempfile to the guest
+			#
 			vmrunstr = "vmrun -T ws -gu #{@vm_user} -gp #{@vm_pass} " +
 					"copyFileFromHostToGuest \'#{@location}\' \'#{local_tempfile_path}\'" +
-					" \'#{remote_tempfile_path}\' nogui"
+					" \'#{remote_tempfile_path}\'"
 			system_command(vmrunstr)
 
-			# now run it on the guest
-			vmrunstr = "vmrun -T ws -gu #{@vm_user} -gp #{@vm_pass} " + 
-					"runProgramInGuest \'#{@location}\' -noWait -activeWindow \'#{remote_run_command}\'"
-			system_command(vmrunstr)
-
-			## CLEANUP
-			# delete it on the guest
+			if @os == "linux"
+				#
+				# Now run the command directly on the guest
+				#
+				vmrunstr = "vmrun -T ws -gu #{@vm_user} -gp #{@vm_pass} " + 
+						"runProgramInGuest \'#{@location}\' /bin/sh #{remote_tempfile_path}"
+				system_command(vmrunstr)
+			else
+				#
+				# Now run the command directly on the guest
+				#
+				vmrunstr = "vmrun -T ws -gu #{@vm_user} -gp #{@vm_pass} " + 
+						"runProgramInGuest \'#{@location}\' #{remote_tempfile_path}"
+				system_command(vmrunstr)
+			end
+			#
+			# Cleanup. Delete it on the guest
+			#
 			vmrunstr = "vmrun -T ws -gu #{@vm_user} -gp #{@vm_pass} " + 
 					"deleteFileInGuest \'#{@location}\' \'#{remote_tempfile_path}\'"
 			system_command(vmrunstr)
 
-			# delete it locally
+			#
+			# Delete it locally
+			#
 			local_delete_command = "rm #{local_tempfile_path}"
 			system_command(local_delete_command)
 		else
-			# since we can't copy easily w/o tools, let's just run it directly :/
+
+			#
+			# Use SCP / SSH
+			#
+
 			if @os == "linux"
+				#
+				# Set up our paths
+				#
+				remote_output_file = "/tmp/lab_command_output_#{rand(1000000)}"
+				local_output_file = "/tmp/lab_command_output_#{rand(1000000)}"
 				
-				output_file = "/tmp/lab_command_output_#{rand(1000000)}"
-				
+				#
+				# Copy it over
+				#
 				scp_to(local_tempfile_path, remote_tempfile_path)
-				ssh_exec(command + "> #{output_file}")
-				scp_from(output_file, output_file)
-				
-				ssh_exec("rm #{output_file}")
+
+				#
+				# And ... execute it
+				#
+				ssh_exec("/bin/sh #{remote_tempfile_path} > #{remote_output_file}")
+
+				#
+				# Now copy the output back to us
+				#
+				scp_from(remote_output_file, local_output_file)
+
+				#
+				# And clean up after yourself on the remote system
+				#
+				ssh_exec("rm #{remote_output_file}")
 				ssh_exec("rm #{remote_tempfile_path}")
-				
-				# Ghettohack!
-				string = File.open(output_file,"r").read
-				`rm #{output_file}`
-				
+
+				# Now, let's look at the output of the command
+				string = File.open(local_output_file,"r").read
+
+				#
+				# And clean that up too
+				#
+				`rm #{local_output_file}`
+
 			else
-				raise "zomgwtfbbqnotools"
-			end	
+				raise "Hey, no tools, and windows? can't do nuttin for ya man."
+			end
+			
 		end
 	return string
 	end
@@ -143,7 +195,7 @@ class WorkstationDriver < VmDriver
 		file = filter_input(file)
 		if @tools
 			vmrunstr = "vmrun -T ws -gu \'#{@vm_user}\' -gp \'#{@vm_pass}\' fileExistsInGuest " +
-				"\'#{@location}\' \'#{file}\' "
+				"\'#{@location}\' \'#{file}\'"
 			system_command(vmrunstr)
 		else
 			raise "Unsupported"
@@ -159,8 +211,6 @@ class WorkstationDriver < VmDriver
 		else
 			raise "Unsupported"
 		end
-
-		
 	end
 
 	def cleanup

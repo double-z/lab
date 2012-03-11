@@ -21,7 +21,15 @@ Gem::Specification.new do |s|
 
   # specify any dependencies here; for example:
   # s.add_development_dependency "rspec"
-   s.add_runtime_dependency "nokogiri"
-   s.add_runtime_dependency "net-ssh"
-   s.add_runtime_dependency "net-scp"
+
+    # ??
+    s.add_runtime_dependency "nokogiri"
+
+    # Multiple things - fallback execute / copy
+    s.add_runtime_dependency "net-ssh"
+    s.add_runtime_dependency "net-scp"
+
+    # Vmware ESX driver
+    s.add_runtime_dependency "rbvmomi"
+    
 end

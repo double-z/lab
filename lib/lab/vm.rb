@@ -49,10 +49,10 @@ class Vm
 
 		@location = filter_input(config['location'])
 		#@name = config['name'] || ""
-		@description = config['description'] || ""
-		@tools = config['tools'] || ""
-		@os = config['os'] || ""			
-		@arch = config['arch'] || ""
+		@description = config['description']
+		@tools = config['tools']
+		@os = config['os']
+		@arch = config['arch']
 		@type = filter_input(config['type']) || "unspecified"
 		@credentials = config['credentials'] || []
 		
@@ -91,9 +91,9 @@ class Vm
 		elsif @driver_type == "remote_workstation"
 			@driver = Lab::Drivers::RemoteWorkstationDriver.new(config)
 		#elsif @driver_type == "qemu"
-		#	@driver = Lab::Drivers::QemuDriver.new	
+		#	@driver = Lab::Drivers::QemuDriver.new
 		#elsif @driver_type == "qemudo"
-		#	@driver = Lab::Drivers::QemudoDriver.new	
+		#	@driver = Lab::Drivers::QemudoDriver.new
 		else
 			raise "Unknown Driver Type"
 		end

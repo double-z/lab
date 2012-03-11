@@ -125,11 +125,10 @@ class RemoteWorkstationDriver < VmDriver
 		system_command(remote_copy_command)
 
 		if @tools 
-					
 			remote_system_command("ssh #{@user}@#{@host} \"vmrun -T ws -gu #{@vm_user} -gp #{@vm_pass} " +
 					"copyFileFromGuestToHost \'#{@location}\' \'#{from}\' \'#{to}\' nogui")
 		else
-			scp_to(from,to)
+			scp_from(to,from)
 		end
 	end
 

@@ -5,13 +5,13 @@
 #
 # 	!!WARNING!! - All drivers are expected to filter input before running
 #	anything based on it. This is particularly important in the case
-#	of the drivers which wrap a command line to provide functionality.  
+#	of the drivers which wrap a command line to provide functionality.	
 #
 
 module Lab
 module Drivers
 class VmDriver
-	
+
 	attr_accessor :vmid 
 	attr_accessor :location
 	attr_accessor :os
@@ -19,11 +19,12 @@ class VmDriver
 	attr_accessor :credentials
 	
 	def initialize(config)
-	
+
 		@vmid = filter_command(config["vmid"].to_s)
 		@location = filter_command(config["location"])
 		@credentials = config["credentials"] || []
 		@tools = filter_input(config["tools"])
+		@arch = filter_input(config["arch"])
 		@os = filter_input(config["os"])
 		@hostname = filter_input(config["hostname"]) || filter_input(config["vmid"].to_s)
 
@@ -125,24 +126,47 @@ private
 	end
 
 	def scp_to(local,remote)
-		puts "DEBUG: copying #{local} to #{remote}"
-		Net::SCP.start(@hostname, @vm_user, :password => @vm_pass) do |scp|
-			scp.upload!(from,to)
+		if @vm_keyfile
+			puts "DEBUG: authenticating to #{@hostname} as #{@vm_user} with key #{@vm_keyfile}"
+			Net::SCP.start(@hostname, @vm_user, :keys => [@vm_keyfile]) do |scp|
+				puts "DEBUG: uploading #{local} to #{remote}"
+				scp.upload!(local,remote)
+			end
+		else
+			Net::SCP.start(@hostname, @vm_user, :password => @vm_pass, :auth_methods => ["password"]) do |scp|
+				puts "DEBUG: uploading #{local} to #{remote}"
+				scp.upload!(local,remote)
+			end
 		end	
 	end
 	
-	def scp_from(local,remote)
+	def scp_from(remote, local)
 		# download a file from a remote server
-		puts "DEBUG: copying #{remote} to #{local}"
-		Net::SCP.start(@hostname, @vm_user, :password => @vm_pass) do |scp|
-			scp.download!(from,to)
+		if @vm_keyfile
+			puts "DEBUG: authenticating to #{@hostname} as #{@vm_user} with key #{@vm_keyfile}"
+			Net::SCP.start(@hostname, @vm_user, :keys => [@vm_keyfile]) do |scp|
+				puts "DEBUG: downloading #{remote} to #{local}"
+				scp.download!(remote,local)
+			end
+		else
+			Net::SCP.start(@hostname, @vm_user, :password => @vm_pass, :auth_methods => ["password"]) do |scp|
+				puts "DEBUG: downloading #{remote} to #{local}"
+				scp.download!(remote,local)
+			end
 		end
 	end
 	
 	def ssh_exec(command)
-		puts "DEBUG: ssh command: #{command} on host #{hostname}"
-		Net::SSH.start(@hostname, @vm_user, :password => @vm_pass) do |ssh|
-			result = ssh.exec!(command)
+		if @vm_keyfile
+			puts "DEBUG: authenticating to #{@hostname} as #{@vm_user} with key #{@vm_keyfile}"
+			Net::SSH.start(@hostname, @vm_user, :keys => [@vm_keyfile]) do |ssh|
+				puts "DEBUG: running command: #{command}"
+				ssh.exec!(command)
+			end
+		else
+			Net::SSH.start(@hostname, @vm_user, :password => @vm_pass, :auth_methods => ["password"]) do |ssh|
+				result = ssh.exec!(command)
+			end
 		end
 	end
 
@@ -153,7 +177,6 @@ private
 		unless /^[\d\w\s\[\]\{\}\/\\\.\-\"\(\):!]*$/.match string
 			raise "WARNING! Invalid character in: #{string}"
 		end
-
 	string
 	end
 
@@ -164,10 +187,9 @@ private
 		unless /^[\d\w\s\[\]\{\}\/\\\.\-\"\(\)]*$/.match string
 			raise "WARNING! Invalid character in: #{string}"
 		end
-
 	string
 	end
-end
 
+end
 end
 end

@@ -60,27 +60,30 @@ class WorkstationDriver < VmDriver
 		script_rand_name = rand(1000000)
 
 		#
-		# Configure paths for each OS
+		# Configure paths for each OS - We really can't filter command, so we're gonna 
+		# stick it in a script
 		#
 		if @os == "windows"
 			local_tempfile_path = "/tmp/lab_script_#{script_rand_name}.bat"
 			remote_tempfile_path = "C:\\\\lab_script_#{script_rand_name}.bat"
+			remote_output_file = "C:\\\\lab_command_output_#{script_rand_name}"
 			remote_run_command = remote_tempfile_path
 			File.open(local_tempfile_path, 'w') {|f| f.write(command) }
 		else
+			
 			local_tempfile_path = "/tmp/lab_script_#{script_rand_name}.sh"
 			remote_tempfile_path = "/tmp/lab_script_#{script_rand_name}.sh"
-			remote_run_command = remote_tempfile_path # TODO - do we need to append /bin/sh ?
+			remote_output_file = "/tmp/lab_command_output_#{script_rand_name}"
+			local_output_file = "/tmp/lab_command_output_#{script_rand_name}"
+			
+			remote_run_command = remote_tempfile_path
+			
 			File.open(local_tempfile_path, 'w') {|f| f.write("#!/bin/sh\n#{command}\n")}
 		end
-
-		#
-		# We really can't filter command, so we're gonna stick it in a script
-		#
 		
 		if @tools
 
-			puts "DEBUG: Running w/ tools"
+			#puts "DEBUG: Running w/ tools"
 
 			#
 			# Copy our local tempfile to the guest
@@ -92,19 +95,20 @@ class WorkstationDriver < VmDriver
 
 			if @os == "linux"
 				#
-				# Now run the command directly on the guest
+				# Now run the command directly on the guest (linux - call w/ /bin/sh)
 				#
 				vmrunstr = "vmrun -T ws -gu #{@vm_user} -gp #{@vm_pass} " + 
-						"runProgramInGuest \'#{@location}\' /bin/sh #{remote_tempfile_path}"
+						"runProgramInGuest \'#{@location}\' /bin/sh #{remote_tempfile_path} > #{remote_output_file}"
 				system_command(vmrunstr)
 			else
 				#
-				# Now run the command directly on the guest
+				# Now run the command directly on the guest (windows)
 				#
 				vmrunstr = "vmrun -T ws -gu #{@vm_user} -gp #{@vm_pass} " + 
-						"runProgramInGuest \'#{@location}\' #{remote_tempfile_path}"
+						"runProgramInGuest \'#{@location}\' #{remote_tempfile_path} > #{remote_output_file}" 
 				system_command(vmrunstr)
 			end
+			
 			#
 			# Cleanup. Delete it on the guest
 			#
@@ -124,11 +128,6 @@ class WorkstationDriver < VmDriver
 			#
 
 			if @os == "linux"
-				#
-				# Set up our paths
-				#
-				remote_output_file = "/tmp/lab_command_output_#{rand(1000000)}"
-				local_output_file = "/tmp/lab_command_output_#{rand(1000000)}"
 				
 				#
 				# Copy it over
@@ -145,18 +144,15 @@ class WorkstationDriver < VmDriver
 				#
 				scp_from(remote_output_file, local_output_file)
 
+				# Now, let's look at the output of the command
+				output_string = File.open(local_output_file,"r").read
+
 				#
-				# And clean up after yourself on the remote system
+				# And clean up
 				#
 				ssh_exec("rm #{remote_output_file}")
 				ssh_exec("rm #{remote_tempfile_path}")
-
-				# Now, let's look at the output of the command
-				string = File.open(local_output_file,"r").read
-
-				#
-				# And clean that up too
-				#
+				
 				`rm #{local_output_file}`
 
 			else
@@ -164,7 +160,7 @@ class WorkstationDriver < VmDriver
 			end
 			
 		end
-	return string
+	output_string
 	end
 	
 	def copy_from(from, to)

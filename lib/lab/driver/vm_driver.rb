@@ -127,7 +127,7 @@ private
 
 	def scp_to(local,remote)
 		if @vm_keyfile
-			puts "DEBUG: authenticating to #{@hostname} as #{@vm_user} with key #{@vm_keyfile}"
+			#puts "DEBUG: authenticating to #{@hostname} as #{@vm_user} with key #{@vm_keyfile}"
 			Net::SCP.start(@hostname, @vm_user, :keys => [@vm_keyfile]) do |scp|
 				puts "DEBUG: uploading #{local} to #{remote}"
 				scp.upload!(local,remote)
@@ -143,7 +143,7 @@ private
 	def scp_from(remote, local)
 		# download a file from a remote server
 		if @vm_keyfile
-			puts "DEBUG: authenticating to #{@hostname} as #{@vm_user} with key #{@vm_keyfile}"
+			#puts "DEBUG: authenticating to #{@hostname} as #{@vm_user} with key #{@vm_keyfile}"
 			Net::SCP.start(@hostname, @vm_user, :keys => [@vm_keyfile]) do |scp|
 				puts "DEBUG: downloading #{remote} to #{local}"
 				scp.download!(remote,local)
@@ -158,7 +158,7 @@ private
 	
 	def ssh_exec(command)
 		if @vm_keyfile
-			puts "DEBUG: authenticating to #{@hostname} as #{@vm_user} with key #{@vm_keyfile}"
+			#puts "DEBUG: authenticating to #{@hostname} as #{@vm_user} with key #{@vm_keyfile}"
 			Net::SSH.start(@hostname, @vm_user, :keys => [@vm_keyfile]) do |ssh|
 				puts "DEBUG: running command: #{command}"
 				ssh.exec!(command)

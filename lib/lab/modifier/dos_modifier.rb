@@ -5,9 +5,9 @@ module Lab
 module Modifier
 module Dos
 
-	def ping(target)
-		run_command("ping #{filter_input(target)}")
-	end
+  def ping(target)
+    run_command("ping #{filter_input(target)}")
+  end
 
 end
 end

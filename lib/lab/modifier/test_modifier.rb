@@ -4,13 +4,13 @@
 module Lab
 module Modifier
 module Test
-	def install_nmap
-		run_command("sudo apt-get install nmap")
-	end
+  def install_nmap
+    run_command("sudo apt-get install nmap")
+  end
 
-	def nmap(options)
-		run_command("nmap #{filter_input(options)}")
-	end
+  def nmap(options)
+    run_command("nmap #{filter_input(options)}")
+  end
 end
 end
 end

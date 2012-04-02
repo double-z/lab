@@ -7,28 +7,34 @@ class Vm
   
   attr_accessor :vmid
   attr_accessor :hostname
-  attr_accessor :name
   attr_accessor :description
+  attr_accessor :user
+  attr_accessor :host
   attr_accessor :location
   attr_accessor :driver
   attr_accessor :credentials
   attr_accessor :tools
   attr_accessor :type
-  attr_accessor :user
-  attr_accessor :host
   attr_accessor :os
   attr_accessor :arch
+  attr_accessor :tags
 
   ## Initialize takes a vm configuration hash of the form
-  ##  - vmid (unique identifier)
-  ##    driver (vm technology)
+  ##  - vmid (unique id)
+  ##    hostname (unique name)
+  ##    description (describes the vm's contents)
+  ##    driver (vm driver)
+  ##    location (if applicable - local system)
   ##    user (if applicable - remote system)
   ##    host (if applicable - remote system)
-  ##    pass (if applicable - remote system)
-  ##    location (file / uri)
+  ##    pass (if applicable - remote system) # DISCOURAGED - USE KEYS!
+  ##    tools (true if tools are installed)
+  ##    type ( qa / vulnerable / etc - freeform option)
   ##    credentials (of the form [ {'user'=>"user",'pass'=>"pass", 'admin' => false}, ... ])
-  ##    os (currently only linux / windows)
-  ##    arch (currently only 32 / 64
+  ##    os (currently linux / windows / solaris / aix) - may be used in modifiers
+  ##    arch (currently 32 / 64)
+  ##    modifiers - can be anything in the modifiers directory
+  ##    tags - list of strings associated with this vm
   
   def initialize(config = {})  
 
@@ -48,7 +54,6 @@ class Vm
     @driver_type.downcase!
 
     @location = filter_input(config['location'])
-    #@name = config['name'] || ""
     @description = config['description']
     @tools = config['tools']
     @os = config['os']
@@ -67,19 +72,19 @@ class Vm
     @user = filter_input(config['user']) || nil
     @host = filter_input(config['host']) || nil
     @port = filter_input(config['port']) || nil
-    @pass = filter_input(config['pass']) || nil
+    @pass = filter_input(config['pass']) || nil # DISCORAGED, use keys!
 
-    #Only dynagen systems need this
+    # Only dynagen systems need this
     @platform = config['platform']
 
-    #Only fog systems need this
+    # Only fog systems need this
     @fog_config = config['fog_config']
-
-    #puts "Passing driver config: #{config}"
 
     # Process the correct driver
     if @driver_type == "workstation"
       @driver = Lab::Drivers::WorkstationDriver.new(config)
+    elsif @driver_type == "remote_workstation"
+      @driver = Lab::Drivers::RemoteWorkstationDriver.new(config)
     elsif @driver_type == "virtualbox"
       @driver = Lab::Drivers::VirtualBoxDriver.new(config)
     elsif @driver_type == "fog"
@@ -88,8 +93,8 @@ class Vm
       @driver = Lab::Drivers::DynagenDriver.new(config, config['dynagen_config'])  
     elsif @driver_type == "remote_esxi"
       @driver = Lab::Drivers::RemoteEsxiDriver.new(config)
-    elsif @driver_type == "remote_workstation"
-      @driver = Lab::Drivers::RemoteWorkstationDriver.new(config)
+    elsif @driver_type == "vsphere"
+      @driver = Lab::Drivers::VsphereDriver.new(config)
     #elsif @driver_type == "qemu"
     #  @driver = Lab::Drivers::QemuDriver.new
     #elsif @driver_type == "qemudo"
@@ -110,8 +115,14 @@ class Vm
          @modifiers.each { |modifier|  self.class.send(:include, eval("Lab::Modifier::#{modifier}"))}
       rescue Exception => e
         # modifier likely didn't exist
-      end     
+      end
     end
+    
+    #
+    # Grab a tags array
+    #
+    @tags = config['tags']
+    
   end
   
   def running?
@@ -205,7 +216,9 @@ class Vm
     
     # Standard configuration options
     out =  " - vmid: #{@vmid}\n"
+    out += "   hostname: #{@hostname}\n"
     out += "   driver: #{@driver_type}\n"
+    out += "   description: |\n #{@description}\n"
     out += "   location: #{@location}\n"
     out += "   type: #{@type}\n"
     out += "   tools: #{@tools}\n"
@@ -215,6 +228,8 @@ class Vm
     if @user or @host # Remote vm/drivers only
       out += "   user: #{@user}\n"
       out += "   host: #{@host}\n"
+      out += "   port: #{@port}\n"
+      out += "   pass: #{@pass}\n"
     end
 
     if @platform

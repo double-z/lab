@@ -29,7 +29,7 @@ Gem::Specification.new do |s|
     s.add_runtime_dependency "net-ssh"
     s.add_runtime_dependency "net-scp"
 
-    # Vmware ESX driver
+    # Vmware vsphere driver
     s.add_runtime_dependency "rbvmomi"
     
 end

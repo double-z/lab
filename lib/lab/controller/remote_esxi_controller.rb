@@ -9,7 +9,7 @@ module RemoteEsxiController
   VIM_CMD = 'vim-cmd'.freeze
 
   def self.dir_list(basepath=nil)
-    # Does this method really even make sense for esx?
+    # Does this method really even make sense for esxi?
     return "Unsupported :("
   end
 

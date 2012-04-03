@@ -31,5 +31,8 @@ Gem::Specification.new do |s|
 
     # Vmware vsphere driver
     s.add_runtime_dependency "rbvmomi"
-    
+
+    # util/console.rb
+    s.add_runtime_dependency "pry"
+
 end

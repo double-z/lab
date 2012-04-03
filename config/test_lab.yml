@@ -6,6 +6,67 @@
    credentials:
      - user: root
        pass: toor
+       admin: true
    os: linux
    flavor: ubuntu
    arch: 64
+ - vmid: backtrack_remote
+   driver: remote_workstation
+   user: root
+   host: vmhost
+   modifiers:
+     - Test
+   credentials:
+     - user: root
+       pass: toor
+       admin: true
+   os: linux
+   flavor: ubuntu
+   arch: 64
+###
+#  Windows XP SP3 - Browser Autopwn Target
+###
+ - vmid: 222
+   hostname: xp
+   description: Windows XP SP3 - Browser Autopwn Target
+   driver: remote_esxi
+   user: root
+   host: vmhost1
+   type: target
+   arch: 32
+   os: linux
+   credentials:
+    - user: msfadmin
+      pass: msfadmin
+      admin: true
+   tags:
+    - ie6
+    - ie7
+    - ie8
+    - firefox
+    - java
+    - flash
+    - quicktime
+###
+#  Windows 7 SP1
+###
+ - vmid: 1111
+   hostname: win7
+   description: Windows 7 SP1 - Browser Autopwn Target
+   driver: remote_esxi
+   user: root
+   host: vmhost1
+   pass: whatever
+   type: target
+   arch: 32
+   os: linux
+   credentials:
+    - user: msfadmin
+      pass: msfadmin
+      admin: true
+   tags:
+    - ie8
+    - firefox
+    - java
+    - flash
+    - quicktime

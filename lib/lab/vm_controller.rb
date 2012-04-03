@@ -35,7 +35,7 @@ module Controllers
     include Lab::Controllers::FogController
     include Lab::Controllers::DynagenController 
     include Lab::Controllers::RemoteEsxiController
-    include Lab::Controllers::VsphereDriver
+    include Lab::Controllers::VsphereController
     #include Lab::Controllers::QemuController 
     #include Lab::Controllers::QemudoController 
     def initialize (labdef=nil)
@@ -62,15 +62,19 @@ module Controllers
 
     def find_by_vmid(search)
       @vms.each do |vm|
-        return vm if vm.hostname.to_s.downcase == search.to_s.downcase
+        return vm if vm.hostname == search
       end
-      return nil
+    nil
+    end
+
+    def find_by_hostname(search)
+      self.find_by_vmid search
     end
 
     def find_by_tag(search)
       @vms.each do |vm|
         vm.tags.each do |tag| 
-          return vm if tag.downcase == search.to_s.downcase
+          return vm if tag == search
         end
       end
       return nil
@@ -117,6 +121,13 @@ module Controllers
     def includes_vmid?(vmid)
       @vms.each do |vm|
         return true if (vm.vmid == vmid)
+      end
+    false
+    end
+
+    def includes_hostname?(hostname)
+      @vms.each do |vm|
+        return true if (vm.hostname == hostname)
       end
     false
     end

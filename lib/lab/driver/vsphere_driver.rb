@@ -15,7 +15,7 @@ class VsphereDriver < VmDriver
   def initialize(config)
     unless config['user'] then raise ArgumentError, "Must provide a username" end
     unless config['host'] then raise ArgumentError, "Must provide a hostname" end
-    unless config[''] then raise ArgumentError, "Must provide a password" end
+    unless config['pass'] then raise ArgumentError, "Must provide a password" end
     super(config)
 
     @user = filter_command(config['user'])
@@ -28,7 +28,7 @@ class VsphereDriver < VmDriver
       raise "WARNING: Library rbvmomi not found. Could not create driver!"
     end
 
-    vim = RbVmomi::VIM.connect host: @host, user: @user, password: @pass
+    vim = RbVmomi::VIM.connect host: @host, user: @user, password: @pass, insecure: true
     dc = vim.serviceInstance.find_datacenter("datacenter1") or fail "datacenter not found"
     @vm = dc.find_vm("test") or fail "VM not found"
   end
